@@ -27,10 +27,11 @@ jobs:
       build-args: |
         FROM_IMAGE=${{ matrix.from || 'python:3.10-slim-bullseye' }}
         CMAKE_ARGS=${{ matrix.cmake-args }}
-        GGML_MODELS=gpt-2 gpt-j whisper gpt-neox replit mpt starcoder
+        GGML_MODELS=gpt-2 gpt-j whisper gpt-neox replit starcoder
 # disabled due to build errors: 
 # mnist ('memcpy' was not declared in this scope)
 # dolly-v2 (No rule to make target 'dolly-v2'.)
+# mpt (‘memcpy’ is defined in header ‘<cstring>’; did you forget to ‘#include <cstring>’?)
       platforms: ${{ matrix.platforms || 'linux/amd64' }}
     secrets: inherit
     strategy:
