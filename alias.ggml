@@ -1,0 +1,4 @@
+# Alias helper
+source .env
+GPU_ARGS="--gpus all"
+alias ggml="docker run ${GPU_ARGS} -v ${LOCAL_MODEL_DIR}:${LOCAL_MODEL_DIR} localagi/ggml:${GGML_VERSION}${GGML_FLAVOR}"

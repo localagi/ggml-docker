@@ -1,0 +1,15 @@
+version: "3.8"
+services:
+
+  ggml-helper:
+    image: localagi/ggml:${GGML_VERSION}${GGML_FLAVOR}
+    init: true
+    tty: true
+    volumes:
+      - $LOCAL_MODEL_DIR:$LOCAL_MODEL_DIR
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              capabilities: [gpu]

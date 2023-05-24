@@ -1,0 +1,58 @@
+name: Publish Docker images
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+permissions:
+  packages: write
+  contents: read
+
+    
+jobs:
+
+  build-ggml:
+    uses: localagi/ai-dedicated-workflows/.github/workflows/operation-docker-build-publish.yml@v3
+    with:
+      context-repository: ggerganov/ggml
+      context-repository-ref: ${{ github.ref_name }}
+      registry-repo-name: ggml
+      tags: |
+        type=schedule
+        type=ref,event=branch
+        type=raw,value=${{ github.ref_name }}
+      flavor: |
+        suffix=${{ matrix.suffix }}
+      build-args: |
+        FROM_IMAGE=${{ matrix.from || 'python:3.10-slim-bullseye' }}
+        CMAKE_ARGS=${{ matrix.cmake-args }}
+        GGML_MODELS=gpt-2 gpt-j whisper gpt-neox replit mpt starcoder
+# disabled due to build errors: 
+# mnist ('memcpy' was not declared in this scope)
+# dolly-v2 (No rule to make target 'dolly-v2'.)
+      platforms: ${{ matrix.platforms || 'linux/amd64' }}
+    secrets: inherit
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+         
+        - type: default # defaults
+          platforms: linux/amd64,linux/arm64/v8
+
+        - type: OPENBLAS
+          cmake-args: "-DGGML_OPENBLAS=1"
+          suffix: "-openblas"
+          platforms: linux/amd64,linux/arm64/v8
+          
+        # see https://hub.docker.com/r/nvidia/cuda/tags       
+        - type: CUBLAS
+          suffix: "-cublas-11.7.1" 
+          cmake-args: "-DGGML_CUBLAS=1"
+          from: nvidia/cuda:11.7.1-devel-ubuntu22.04
+          
+        - type: CUBLAS
+          suffix: "-cublas-12.1.1"
+          cmake-args: "-DGGML_CUBLAS=1"
+          from: nvidia/cuda:12.1.1-devel-ubuntu22.04
